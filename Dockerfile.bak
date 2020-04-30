@@ -1,0 +1,203 @@
+FROM centos:7
+
+ARG p=4
+ARG GCC=gcc-9.3.0
+ARG CMAKE=cmake-3.17.1-Linux-x86_64
+ARG LLVM=llvm-project
+ARG TOOLCHAIN=stable
+
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib
+
+RUN cd /etc/yum.repos.d/ && \
+    mkdir repo_bak && \
+    mv *.repo repo_bak/ && \
+    curl -LO http://mirrors.aliyun.com/repo/Centos-7.repo && \
+    yum install -y epel-release && \
+    curl -LO http://mirrors.aliyun.com/repo/epel-7.repo && \
+    yum clean all && yum makecache
+
+# gcc/gcc-c++ 4.8.5, glibc 2.17
+RUN yum -y install \
+    yum-utils \
+    automake \
+    autoconf \
+    libtool \
+    make \
+    gcc gcc-c++ \
+    kernel-devel \
+    gmp gmp-devel \
+    mpfr mpfr-devel \
+    libmpc libmpc-devel \
+    git \
+    python36 \
+    zlib zlib-devel \
+    openssl openssl-devel \
+    vim
+
+ADD $GCC.tar.xz /tmp/
+RUN cd /tmp/$GCC && mkdir build && cd build && \
+    ../configure --prefix=/usr/local/gcc9 --enable-checking=release --enable-languages=c,c++ --disable-multilib && \
+    make -j$p && \
+    make install && \
+    echo "/usr/local/gcc9/lib" > /etc/ld.so.conf.d/gcc9lib.conf && \
+    echo "/usr/local/gcc9/lib64" > /etc/ld.so.conf.d/gcc9lib64.conf && \
+    /sbin/ldconfig && \
+    rm -rf /tmp/$GCC
+
+RUN echo "alias cc=/usr/local/gcc9/bin/gcc" >> /root/.bash_profile && \
+    echo "alias gcc=/usr/local/gcc9/bin/gcc" >> /root/.bash_profile && \
+    echo "alias c++=/usr/local/gcc9/bin/c++" >> /root/.bash_profile && \
+    echo "alias g++=/usr/local/gcc9/bin/g++" >> /root/.bash_profile && \
+    echo "alias cpp=/usr/local/gcc9/bin/cpp"
+
+ENV CC=/usr/local/gcc9/bin/gcc
+ENV CXX=/usr/local/gcc9/bin/c++
+# same as ldconfig
+ENV LD_LIBRARY_PATH=/usr/local/gcc9/lib64:/usr/local/gcc9/lib:$LD_LIBRARY_PATH
+ENV PATH=/usr/local/gcc9/bin:$PATH
+
+ADD $CMAKE.tar.gz /usr/local/
+ENV PATH=/usr/local/$CMAKE/bin:$PATH
+
+ADD $LLVM.tar.xz /tmp/
+RUN cd /tmp/$LLVM && \
+    mkdir build && \
+    cd build && \
+    cmake -G "Unix Makefiles" \
+    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;libcxx;libcxxabi;compiler-rt;lld" \
+    -DCMAKE_INSTALL_PREFIX=/usr/local/llvm \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_TARGETS_TO_BUILD="X86" \
+    ../llvm && \
+    make -j$p && \
+    make install
+
+RUN echo "/usr/local/llvm/lib" > /etc/ld.so.conf.d/clang.conf && \
+    echo "/usr/local/llvm/libexec" > /etc/ld.so.conf.d/clanglibexec.conf && \
+    /sbin/ldconfig
+
+RUN echo "alias cc=/usr/local/llvm/bin/clang" >> /root/.bash_profile && \
+    echo "alias c++=/usr/local/llvm/bin/clang++" >> /root/.bash_profile && \
+    echo "alias cpp=/usr/local/llvm/bin/clang-cpp" >> /root/.bash_profile
+
+ENV CC=/usr/local/llvm/bin/clang
+ENV CXX=/usr/local/llvm/bin/clang++
+ENV CXXFLAGS='-stdlib=libc++'
+ENV LDFLAGS='-lc++ -lc++abi'
+ENV LD_LIBRARY_PATH=/usr/local/llvm/lib:$LD_LIBRARY_PATH
+ENV PATH=/usr/local/llvm/bin:$PATH
+
+# -----------------rust----------------- #
+ENV PATH=/root/.cargo/bin:$PATH
+RUN curl https://sh.rustup.rs -sSf | \
+    sh -s -- -y --default-toolchain $TOOLCHAIN && \
+    rustup target add x86_64-unknown-linux-gnu
+
+ADD cargo-config.toml /root/.cargo/config
+RUN mkdir -p /root/rust/src /root/rust/libs
+ENV RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
+ENV RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+
+WORKDIR /root/rust
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
