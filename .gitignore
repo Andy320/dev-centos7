@@ -8,3 +8,4 @@ kubectl
 postgresql-11.7.tar.gz
 zlib-1.2.11.tar.gz
 cmake-3.17.1-Linux-x86_64.tar.gz
+jdk-8u231-linux-x64.tar.gz

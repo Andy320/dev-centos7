@@ -6,10 +6,11 @@ ARG CMAKE=cmake-3.17.1-Linux-x86_64
 # llvm 10
 ARG LLVM=llvm-project
 ARG GO=go1.14.2.linux-amd64
+ARG JDK=jdk-8u231-linux-x64
 ARG HOME=/root
 
-ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib
 
 RUN cd /etc/yum.repos.d/ && \
     mkdir repo_bak && \
@@ -24,11 +25,11 @@ RUN cd /etc/yum.repos.d/ && \
 
 RUN yum install -y \
     devtoolset-9-toolchain && \
-    echo "source /opt/rh/devtoolset-9/enable" >> /etc/profile && \
-    source /etc/profile
+    echo ". /opt/rh/devtoolset-9/enable" >> /etc/bashrc && \
+    . /etc/bashrc
 
-ENV CC=/opt/rh/devtoolset-9/root/usr/bin/gcc
-ENV CXX=/opt/rh/devtoolset-9/root/usr/bin/c++
+ENV CC=/opt/rh/devtoolset-9/root/usr/bin/gcc \
+    CXX=/opt/rh/devtoolset-9/root/usr/bin/c++
 
 RUN yum -y install \
     yum-utils \
@@ -37,42 +38,18 @@ RUN yum -y install \
     libtool \
     make \
     kernel-devel \
-    gmp gmp-devel \
-    mpfr mpfr-devel \
-    libmpc libmpc-devel \
     git \
     python36 \
     zlib zlib-devel \
     openssl openssl-devel \
     vim \
-<<<<<<< HEAD
-    mlocate && updatedb
-=======
+    lrzsz \
+    pcre pcre-devel \
+    bash-completion \
+    unzip zip \
+    wget \
     mlocate && \
     updatedb
-
-ADD $GCC.tar.xz /tmp/
-RUN cd /tmp/$GCC && mkdir build && cd build && \
-    ../configure --prefix=/usr/local/gcc9 --enable-checking=release --enable-languages=c,c++ --disable-multilib && \
-    make -j$p && \
-    make install && \
-    echo "/usr/local/gcc9/lib" > /etc/ld.so.conf.d/gcc9lib.conf && \
-    echo "/usr/local/gcc9/lib64" > /etc/ld.so.conf.d/gcc9lib64.conf && \
-    /sbin/ldconfig && \
-    rm -rf /tmp/$GCC
-
-RUN echo "alias cc=/usr/local/gcc9/bin/gcc" >> /root/.bash_profile && \
-    echo "alias gcc=/usr/local/gcc9/bin/gcc" >> /root/.bash_profile && \
-    echo "alias c++=/usr/local/gcc9/bin/c++" >> /root/.bash_profile && \
-    echo "alias g++=/usr/local/gcc9/bin/g++" >> /root/.bash_profile && \
-    echo "alias cpp=/usr/local/gcc9/bin/cpp"
-
-ENV CC=/usr/local/gcc9/bin/gcc
-ENV CXX=/usr/local/gcc9/bin/c++
-# same as ldconfig
-ENV LD_LIBRARY_PATH=/usr/local/gcc9/lib64:/usr/local/gcc9/lib:$LD_LIBRARY_PATH
-ENV PATH=/usr/local/gcc9/bin:$PATH
->>>>>>> a3c9e322e2d1fbbf41f5c765dd766aee2732caa0
 
 # -----------------cmake---------------- #
 ADD $CMAKE.tar.gz /usr/local/
@@ -111,6 +88,13 @@ ENV GOPATH=$HOME/go
 ENV GO111MODULE=on
 ENV GOPROXY=https://goproxy.cn
 ENV PATH=$GOROOT/bin:$PATH
+
+# -----------------jdk8----------------- #
+ADD $JDK.tar.gz /usr/local/
+ENV JAVA_HOME=/usr/local/jdk1.8.0_231 \
+    JRE_HOME=/usr/local/jdk1.8.0_231/jre \
+    CLASSPATH=.:/usr/local/jdk1.8.0_231/lib:/usr/local/jdk1.8.0_231/jre/lib \
+    PATH=/usr/local/jdk1.8.0_231/bin:$PATH
 
 WORKDIR $HOME
 
