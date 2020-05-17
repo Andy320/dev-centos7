@@ -96,7 +96,7 @@ ENV JAVA_HOME=/usr/local/jdk1.8.0_231 \
     CLASSPATH=.:/usr/local/jdk1.8.0_231/lib:/usr/local/jdk1.8.0_231/jre/lib \
     PATH=/usr/local/jdk1.8.0_231/bin:$PATH
 
-WORKDIR $HOME
+WORKDIR $HOME/rust/src
 
 
 
